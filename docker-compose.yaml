@@ -1,0 +1,39 @@
+version: '3'
+services:
+  web:
+    image: nginx:latest
+    container_name: docker-example-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ${PWD}/app:/www
+      - ./site.conf:/etc/nginx/conf.d/site.conf
+    networks:
+      - web-network
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: php:8.2-fpm-alpine-pdo-mysql
+    container_name: docker-example-php-fpm
+    restart: unless-stopped
+    volumes:
+      - ./app:/www
+    networks:
+      - web-network
+  db:
+    image: mysql:8.0.33
+    container_name: docker-example-mysql
+    restart: unless-stopped
+    ports:
+      - "3311:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: teste
+    networks:
+      - web-network
+networks:
+  web-network:
+    name: docker-example-network
